@@ -1,0 +1,292 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+// If user is already authenticated, redirect them to the dashboard immediately.
+const user = Astro.locals.user;
+if (user) {
+  return Astro.redirect('/dashboard');
+}
+---
+
+<Layout>
+  <main class="home-page">
+    <!-- Glowing background lights -->
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+
+    <div class="hero-container">
+      <div class="badge">Astro Auth Showcase</div>
+      
+      <div class="logo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="logo-icon">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+          <path d="M2 17l10 5 10-5"></path>
+          <path d="M2 12l10 5 10-5"></path>
+        </svg>
+        <span>AstroAuth</span>
+      </div>
+
+      <h1 class="hero-title">
+        Standalone Auth Component <br />
+        <span class="gradient-text">for Astro & Supabase</span>
+      </h1>
+      
+      <p class="hero-description">
+        A drop-in, server-side rendered auth template for the Astro community. Configured with secure cookie session sync and Cloudflare Turnstile bot protection.
+      </p>
+
+      <div class="actions">
+        <a href="/login" class="btn-primary">Sign In</a>
+        <a href="/signup" class="btn-secondary">Create Account</a>
+      </div>
+
+      <!-- Feature grid preview -->
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="icon-circle">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h4>Secure Cookies</h4>
+          <p>Utilizes HttpOnly cookie sessions to protect against XSS and CSRF token thefts.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon-circle">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 14.14 14.14"/></svg>
+          </div>
+          <h4>Turnstile CAPTCHA</h4>
+          <p>Securely verified on the server-side to prevent bot registration attempts.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon-circle">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 2 18 2 18 6 6 6"/><rect x="3" y="6" width="18" height="16" rx="2"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+          </div>
+          <h4>Astro Actions</h4>
+          <p>Fully typed server handlers providing seamless AJAX form submissions.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  :root {
+    --color-primary: #6366f1;
+    --color-accent: #a855f7;
+    --color-text-base: #f4f4f5;
+    --color-text-muted: #a1a1aa;
+    --color-border: rgba(255, 255, 255, 0.08);
+    --font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  .home-page {
+    position: relative;
+    background-color: #030014;
+    color: var(--color-text-base);
+    font-family: var(--font-family);
+    min-height: 100vh;
+    padding: 80px 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  /* Decorative glows */
+  .glow {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    filter: blur(140px);
+    opacity: 0.12;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .glow-1 {
+    top: -10%;
+    left: 15%;
+    background: radial-gradient(circle, var(--color-primary) 0%, transparent 70%);
+  }
+
+  .glow-2 {
+    bottom: -10%;
+    right: 15%;
+    background: radial-gradient(circle, var(--color-accent) 0%, transparent 70%);
+  }
+
+  .hero-container {
+    max-width: 800px;
+    width: 100%;
+    text-align: center;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .badge {
+    background: rgba(99, 102, 241, 0.1);
+    color: #a5b4fc;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 99px;
+    padding: 6px 16px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 24px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 1.5rem;
+    background: linear-gradient(135deg, #818cf8 0%, #c084fc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 24px;
+  }
+
+  .logo-icon {
+    width: 28px;
+    height: 28px;
+    stroke: #818cf8;
+  }
+
+  .hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -2px;
+    margin: 0 0 20px 0;
+    background: linear-gradient(to bottom, #ffffff, #e4e4e7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .gradient-text {
+    background: linear-gradient(to right, #818cf8, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero-description {
+    color: var(--color-text-muted);
+    font-size: 1.125rem;
+    line-height: 1.6;
+    margin: 0 0 40px 0;
+    max-width: 600px;
+  }
+
+  .actions {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 80px;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+    border: none;
+    border-radius: 12px;
+    color: #ffffff;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    padding: 14px 32px;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.25);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(99, 102, 241, 0.4);
+    filter: brightness(1.05);
+  }
+
+  .btn-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-base);
+    border-radius: 12px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    padding: 14px 32px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  /* Feature grid */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    width: 100%;
+    margin-top: 20px;
+    border-top: 1px solid var(--color-border);
+    padding-top: 60px;
+  }
+
+  .feature-card {
+    background: rgba(24, 24, 27, 0.4);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    padding: 24px;
+    text-align: left;
+    transition: all 0.2s ease;
+  }
+
+  .feature-card:hover {
+    background: rgba(24, 24, 27, 0.6);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .icon-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(99, 102, 241, 0.1);
+    color: #818cf8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+
+  .icon-circle svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .feature-card h4 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+  }
+
+  .feature-card p {
+    color: var(--color-text-muted);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  @media (max-width: 768px) {
+    .hero-title {
+      font-size: 2.5rem;
+    }
+    .feature-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+  }
+</style>
