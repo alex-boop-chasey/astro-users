@@ -122,7 +122,7 @@ export const server = {
       if (error) {
         throw new ActionError({
           code: 'UNAUTHORIZED',
-          message: error.message,
+          message: 'Invalid email or password. Please try again.',
         });
       }
 

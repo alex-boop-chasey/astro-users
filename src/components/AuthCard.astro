@@ -57,6 +57,10 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || import.m
 
     <!-- Form -->
     <form id="auth-form" class="auth-form" novalidate>
+      <div class="honeypot-field" aria-hidden="true">
+        <label for="auth-website">Website</label>
+        <input type="text" id="auth-website" name="website" autocomplete="off" tabindex="-1" />
+      </div>
       <!-- Name Field (Only visible in Sign Up mode) -->
       <div class={`form-group ${initialMode === 'signup' ? '' : 'hidden'}`} id="name-group">
         <label for="auth-name">Full Name</label>
@@ -69,6 +73,7 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || import.m
             type="text" 
             id="auth-name" 
             name="name" 
+            autocomplete="name"
             placeholder="John Doe" 
             required={initialMode === 'signup'} 
           />
@@ -88,6 +93,7 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || import.m
             type="email" 
             id="auth-email" 
             name="email" 
+            autocomplete="email"
             placeholder="you@example.com" 
             required 
           />
@@ -107,6 +113,7 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || import.m
             type="password" 
             id="auth-password" 
             name="password" 
+            autocomplete={initialMode === 'signup' ? 'new-password' : 'current-password'}
             placeholder="••••••••" 
             required 
           />
@@ -169,6 +176,7 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || import.m
   const nameInput = document.getElementById('auth-name') as HTMLInputElement;
   const emailInput = document.getElementById('auth-email') as HTMLInputElement;
   const passwordInput = document.getElementById('auth-password') as HTMLInputElement;
+  const honeypotInput = document.getElementById('auth-website') as HTMLInputElement;
   const passwordToggle = document.getElementById('password-toggle') as HTMLButtonElement;
   
   const authTitle = document.getElementById('auth-title') as HTMLHeadingElement;
@@ -260,6 +268,7 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || import.m
   function showAlert(message: string, type: 'error' | 'success') {
     alertBox.className = `auth-alert ${type}`;
     alertMessage.textContent = message;
+    alertBox.setAttribute('aria-live', 'polite');
   }
 
   function clearAlert() {
@@ -278,16 +287,14 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || import.m
     passwordInput.classList.remove('error');
   }
 
-  function resetTurnstile() {
-    if (typeof (window as any).turnstile !== 'undefined') {
-      (window as any).turnstile.reset();
-    }
-  }
-
-  // Client-Side Validation
   function validateForm(): boolean {
     clearFieldErrors();
     let isValid = true;
+
+    if (honeypotInput.value.trim()) {
+      showAlert('Unable to process your request at this time.', 'error');
+      return false;
+    }
 
     if (currentMode === 'signup') {
       if (!nameInput.value.trim()) {
@@ -330,6 +337,12 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || import.m
     }
 
     return isValid;
+  }
+
+  function resetTurnstile() {
+    if (typeof (window as any).turnstile !== 'undefined') {
+      (window as any).turnstile.reset();
+    }
   }
 
   // Form Submission
@@ -606,6 +619,16 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || import.m
   .input-wrapper input.error {
     border-color: var(--color-error);
     box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+  }
+
+  .honeypot-field {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
   }
 
   .password-toggle {
