@@ -1,21 +1,6 @@
 import { defineMiddleware } from 'astro:middleware';
 import { getSupabase } from './lib/supabase';
 
-if (typeof globalThis.process === 'undefined') {
-  globalThis.process = {
-    stdout: {
-      write(message: string) {
-        console.log(message);
-      },
-    },
-    stderr: {
-      write(message: string) {
-        console.error(message);
-      },
-    },
-  } as unknown as typeof process;
-}
-
 export const onRequest = defineMiddleware(async (context, next) => {
   const pathname = context.url.pathname;
 
