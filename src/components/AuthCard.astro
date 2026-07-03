@@ -380,14 +380,13 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || import.m
           }
           resetTurnstile();
         } else if (data?.success) {
-          showAlert(data.message, 'success');
           if (data.hasSession) {
+            showAlert('Login successful! Redirecting...', 'success');
             setTimeout(() => {
               window.location.href = '/dashboard';
             }, 1500);
           } else {
-            form.reset();
-            resetTurnstile();
+            window.location.href = `/check-email?email=${encodeURIComponent(email)}`;
           }
         }
       }
