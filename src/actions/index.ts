@@ -78,9 +78,13 @@ export const server = {
       });
 
       if (error) {
+        const message = /email rate limit exceeded/i.test(error.message)
+          ? 'Email rate limit exceeded — try again in 15 minutes.'
+          : error.message;
+
         throw new ActionError({
           code: 'BAD_REQUEST',
-          message: error.message,
+          message,
         });
       }
 
