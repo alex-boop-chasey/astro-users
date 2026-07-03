@@ -577,6 +577,21 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || import.m
     position: relative;
     display: flex;
     align-items: center;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .input-wrapper:focus-within {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15),
+                0 4px 12px rgba(99, 102, 241, 0.05);
+  }
+
+  .input-wrapper:focus-within input {
+    border-color: var(--color-primary);
+  }
+
+  .input-wrapper:focus-within .input-icon,
+  .input-wrapper:focus-within .password-toggle {
+    color: var(--color-primary);
   }
 
   .input-icon {
