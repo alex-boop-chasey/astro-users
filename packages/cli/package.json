@@ -1,0 +1,37 @@
+{
+  "name": "@astrostack/cli",
+  "version": "0.1.0",
+  "description": "Install AstroStack components into your Astro project — copied into your src/, fully yours to edit.",
+  "type": "module",
+  "bin": {
+    "astrostack": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "astro",
+    "astrostack",
+    "auth",
+    "cli",
+    "scaffold"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@clack/prompts": "^0.7.0",
+    "picocolors": "^1.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "tsup": "^8.2.4",
+    "typescript": "^5.5.4"
+  }
+}

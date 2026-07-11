@@ -1,46 +1,105 @@
-# Astro Starter Kit: Basics
+# AstroStack
 
-```sh
-npm create astro@latest -- --template basics
+A line of Astro-native components you install into your **own** `src/` and fully own — no
+lock-in, no `node_modules` black box. One free flagship (`auth`) plus a planned set of paid
+components, all delivered by a single shadcn-style installer.
+
+```bash
+# from anywhere inside an Astro project
+npx astrostack add auth
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+The files land in your project. You can read, edit, and delete every line.
 
-## 🚀 Project Structure
+---
 
-Inside of your Astro project, you'll see the following folders and files:
+## Repository layout (pnpm monorepo)
 
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
+```
+astrostack/
+├── apps/
+│   └── web/           # the original working auth site — now the live demo / dev playground
+├── packages/
+│   └── cli/           # the `astrostack` installer (TypeScript, built with tsup)
+├── registry/          # source of truth for installable components
+│   ├── schema.json    # JSON Schema for a component manifest
+│   └── auth/
+│       ├── registry.json   # the "recipe": files, env vars, deps, post-install notes
+│       └── files/          # the actual files copied into a user's project
+├── pnpm-workspace.yaml
+└── package.json       # workspace root
 ```
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+**Key idea:** the CLI is generic. Adding a new component = adding a folder under `registry/`
+with a `registry.json` manifest and its `files/`. No CLI changes needed.
 
-## 🧞 Commands
+## How the installer works
 
-All commands are run from the root of the project, from a terminal:
+`astrostack add <name>`:
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+1. Resolves the component and its `requires` (transitive dependencies) from the registry.
+2. Shows an install plan and (interactively) asks to proceed.
+3. Copies files into the project — **never clobbering** existing files. A conflicting file is
+   written next to yours as `*.astrostack-new` unless you pass `--force`.
+4. Merges required env vars into `.env`, prompting for values, skipping ones already set.
+5. Warns (does not rewrite) if `astro.config.*` is missing `output: 'server'` or an adapter.
+6. Prints the `npm/pnpm/yarn` install command for npm dependencies and any post-install steps.
 
-## 👀 Want to learn more?
+### CLI commands
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+| Command                      | Action                                          |
+| :--------------------------- | :---------------------------------------------- |
+| `astrostack list`            | List available components                       |
+| `astrostack add <name...>`   | Install one or more components                  |
+| `astrostack add auth --yes`  | Non-interactive install                         |
+| `--cwd <path>`               | Target a different project directory            |
+| `--registry <url\|path>`     | Override the registry source                    |
+| `--force`                    | Overwrite existing files                        |
+
+### Registry resolution order
+
+`--registry` flag → `ASTROSTACK_REGISTRY` env → local monorepo `registry/` (dev) → hosted default.
+
+## Developing
+
+```bash
+pnpm install                      # install workspace deps
+pnpm --filter @astrostack/cli build   # build the CLI to packages/cli/dist
+node packages/cli/dist/index.js list  # run it against the local registry
+
+# try a real install into a scratch project
+node packages/cli/dist/index.js add auth --cwd /path/to/some/astro-project
+```
+
+The demo site still runs on its own:
+
+```bash
+pnpm --filter web dev
+```
+
+---
+
+## Components
+
+| Name   | Tier | Status  | Description                                                             |
+| :----- | :--- | :------ | :---------------------------------------------------------------------- |
+| `auth` | free | **built** | Email/password auth: Supabase SSR, Cloudflare Turnstile, honeypot, protected-route middleware. |
+
+Planned paid components (specs in `../Component-stack/`): `stripe`, `forms`, `consent`, `rbac`,
+`oauth`, `blog`, `upload`, `email`, `analytics`, `waitlist`.
+
+## Roadmap
+
+- **Milestone 1 — DONE:** monorepo + shadcn-style CLI + `auth` as the first registry entry;
+  `astrostack add auth` verified end-to-end (file copy, conflict safety, `.env` merge, config check).
+- **Milestone 2:** Pro gating — license-key validation, private registry endpoint, disclosed
+  per-customer watermarking, and a public-web scan agent to match leaks against the customer list.
+  (Note: no hidden/phone-home code — the delivered files are readable by the customer, so
+  enforcement lives server-side + via disclosed license terms.)
+- **Milestone 3+:** author the 10 paid components as registry manifests reusing the design system.
+
+## Naming
+
+- **Product line:** AstroStack · **CLI:** `astrostack`
+- **Flagship (free):** slug `auth`, marketed as `astro-auth` (alias: `astro-supabase-auth`).
+- The legacy `astro-users` / `AstroAuth` / `Mindful Auth` labels are being retired.

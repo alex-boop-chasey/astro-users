@@ -1,0 +1,46 @@
+{
+  "$schema": "../schema.json",
+  "name": "auth",
+  "title": "Astro Auth",
+  "npmName": "astro-auth",
+  "aliases": ["astro-supabase-auth"],
+  "description": "Email/password authentication for Astro with Supabase SSR, Cloudflare Turnstile, honeypot spam protection, and protected-route middleware. Server-rendered, edge-ready, and fully yours to edit.",
+  "tier": "free",
+  "version": "0.1.0",
+  "homepage": "https://astrostack.dev/components/auth",
+  "license": "MIT",
+  "requires": [],
+  "npmDependencies": {
+    "@supabase/ssr": "^0.12.0",
+    "@supabase/supabase-js": "^2.110.0"
+  },
+  "astro": {
+    "output": "server",
+    "adapterRequired": true
+  },
+  "files": [
+    { "path": "lib/supabase.ts", "target": "src/lib/supabase.ts", "type": "lib" },
+    { "path": "actions/index.ts", "target": "src/actions/index.ts", "type": "actions" },
+    { "path": "middleware.ts", "target": "src/middleware.ts", "type": "middleware" },
+    { "path": "env.d.ts", "target": "src/env.d.ts", "type": "types" },
+    { "path": "components/AuthCard.astro", "target": "src/components/AuthCard.astro", "type": "component" },
+    { "path": "layouts/Layout.astro", "target": "src/layouts/Layout.astro", "type": "layout" },
+    { "path": "pages/login.astro", "target": "src/pages/login.astro", "type": "page" },
+    { "path": "pages/signup.astro", "target": "src/pages/signup.astro", "type": "page" },
+    { "path": "pages/dashboard.astro", "target": "src/pages/dashboard.astro", "type": "page" },
+    { "path": "pages/check-email.astro", "target": "src/pages/check-email.astro", "type": "page" }
+  ],
+  "env": [
+    { "name": "PUBLIC_SUPABASE_URL", "prompt": "Supabase project URL", "required": true, "public": true, "example": "https://xxxxxxxx.supabase.co" },
+    { "name": "PUBLIC_SUPABASE_ANON_KEY", "prompt": "Supabase anon / public key", "required": true, "public": true },
+    { "name": "PUBLIC_TURNSTILE_SITE_KEY", "prompt": "Cloudflare Turnstile site key", "required": true, "public": true },
+    { "name": "TURNSTILE_SECRET_KEY", "prompt": "Cloudflare Turnstile secret key", "required": true, "secret": true },
+    { "name": "PUBLIC_SITE_URL", "prompt": "Public site URL for email-confirmation redirects (optional)", "required": false, "public": true, "example": "https://example.com" }
+  ],
+  "postInstall": [
+    "Enable the Email provider in Supabase (Authentication -> Providers).",
+    "Create a Cloudflare Turnstile widget and paste its site + secret keys when prompted.",
+    "Protected route: /dashboard. Auth routes: /login and /signup (redirect to /dashboard when signed in).",
+    "Ensure your Astro config uses output: 'server' with an SSR adapter, then start your dev server and open /login."
+  ]
+}

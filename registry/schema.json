@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://astrostack.dev/registry/schema.json",
+  "title": "AstroStack component manifest",
+  "type": "object",
+  "required": ["name", "title", "description", "tier", "version", "files"],
+  "additionalProperties": true,
+  "properties": {
+    "name": { "type": "string", "description": "CLI slug, e.g. \"auth\"", "pattern": "^[a-z][a-z0-9-]*$" },
+    "title": { "type": "string" },
+    "npmName": { "type": "string", "description": "Public/marketing package name, e.g. \"astro-auth\"" },
+    "aliases": { "type": "array", "items": { "type": "string" } },
+    "description": { "type": "string" },
+    "tier": { "type": "string", "enum": ["free", "pro"] },
+    "version": { "type": "string" },
+    "homepage": { "type": "string" },
+    "license": { "type": "string" },
+    "requires": {
+      "type": "array",
+      "description": "Slugs of other AstroStack components that must be installed first",
+      "items": { "type": "string" }
+    },
+    "npmDependencies": {
+      "type": "object",
+      "description": "npm packages the component needs, name -> semver range",
+      "additionalProperties": { "type": "string" }
+    },
+    "astro": {
+      "type": "object",
+      "properties": {
+        "output": { "type": "string", "enum": ["static", "server", "hybrid"] },
+        "adapterRequired": { "type": "boolean" }
+      }
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "target"],
+        "properties": {
+          "path": { "type": "string", "description": "Path within the component's files/ dir" },
+          "target": { "type": "string", "description": "Destination path relative to the project root" },
+          "type": { "type": "string" }
+        }
+      }
+    },
+    "env": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string" },
+          "prompt": { "type": "string" },
+          "required": { "type": "boolean" },
+          "public": { "type": "boolean" },
+          "secret": { "type": "boolean" },
+          "example": { "type": "string" }
+        }
+      }
+    },
+    "postInstall": { "type": "array", "items": { "type": "string" } }
+  }
+}
