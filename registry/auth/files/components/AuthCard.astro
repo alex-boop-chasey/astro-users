@@ -135,6 +135,9 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || import.m
           </button>
         </div>
         <span class="field-error" id="password-error"></span>
+        <div class={`forgot-password-row ${initialMode === 'login' ? '' : 'hidden'}`} id="forgot-password-row">
+          <a href="/forgot-password" class="forgot-password-link">Forgot password?</a>
+        </div>
       </div>
 
       <!-- Cloudflare Turnstile CAPTCHA -->
@@ -173,6 +176,7 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || import.m
   const tabLogin = document.getElementById('tab-login') as HTMLButtonElement;
   const tabSignup = document.getElementById('tab-signup') as HTMLButtonElement;
   const nameGroup = document.getElementById('name-group') as HTMLDivElement;
+  const forgotPasswordRow = document.getElementById('forgot-password-row') as HTMLDivElement;
   const nameInput = document.getElementById('auth-name') as HTMLInputElement;
   const emailInput = document.getElementById('auth-email') as HTMLInputElement;
   const passwordInput = document.getElementById('auth-password') as HTMLInputElement;
@@ -209,7 +213,8 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || import.m
 
       nameGroup.classList.add('hidden');
       nameInput.removeAttribute('required');
-      
+      forgotPasswordRow.classList.remove('hidden');
+
       authTitle.textContent = 'Welcome back';
       authSubtitle.textContent = 'Please enter your credentials to access your account.';
       btnText.textContent = 'Sign In';
@@ -224,7 +229,8 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || import.m
 
       nameGroup.classList.remove('hidden');
       nameInput.setAttribute('required', 'true');
-      
+      forgotPasswordRow.classList.add('hidden');
+
       authTitle.textContent = 'Create account';
       authSubtitle.textContent = 'Get started with your free account today.';
       btnText.textContent = 'Create Account';
@@ -683,6 +689,28 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || import.m
     font-size: 0.75rem;
     color: var(--color-error);
     font-weight: 500;
+  }
+
+  .forgot-password-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 2px;
+  }
+
+  .forgot-password-row.hidden {
+    display: none;
+  }
+
+  .forgot-password-link {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .forgot-password-link:hover {
+    color: var(--color-accent);
   }
 
   /* Captcha styling */
