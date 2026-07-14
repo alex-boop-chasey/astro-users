@@ -43,7 +43,7 @@ export interface WriteResult {
  * - identical content -> "unchanged"
  * - new file -> "created"
  * - differs + force -> "overwritten"
- * - differs, no force -> write "<target>.astro-sb-auth-new" and report "conflict"
+ * - differs, no force -> write "<target>.astro-users-new" and report "conflict"
  */
 export async function writeComponentFile(
   root: string,
@@ -56,10 +56,10 @@ export async function writeComponentFile(
     const existing = await readFile(abs, "utf8");
     if (existing === content) return { target, outcome: "unchanged" };
     if (!force) {
-      const altAbs = `${abs}.astro-sb-auth-new`;
+      const altAbs = `${abs}.astro-users-new`;
       await mkdir(dirname(altAbs), { recursive: true });
       await writeFile(altAbs, content, "utf8");
-      return { target, outcome: "conflict", altPath: `${target}.astro-sb-auth-new` };
+      return { target, outcome: "conflict", altPath: `${target}.astro-users-new` };
     }
     await writeFile(abs, content, "utf8");
     return { target, outcome: "overwritten" };
@@ -100,7 +100,7 @@ export async function mergeEnv(
 
   if (added.length > 0) {
     const prefix = current.length > 0 && !current.endsWith("\n") ? "\n" : "";
-    const block = `${prefix}\n# --- Added by Astro SB Auth ---\n${lines.join("\n")}\n`;
+    const block = `${prefix}\n# --- Added by Astro Users ---\n${lines.join("\n")}\n`;
     await writeFile(envPath, current + block, "utf8");
   }
 

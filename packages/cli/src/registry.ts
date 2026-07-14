@@ -42,15 +42,15 @@ export interface RegistrySource {
 }
 
 /** Default hosted registry, used when no local registry and no override is found. */
-export const DEFAULT_REGISTRY_URL = "https://astro-sb-auth.dev/registry";
+export const DEFAULT_REGISTRY_URL = "https://astro-users.dev/registry";
 
 /**
  * Resolve where component manifests + files are read from.
- * Precedence: explicit override -> ASTRO_SB_AUTH_REGISTRY env -> local monorepo
+ * Precedence: explicit override -> ASTRO_USERS_REGISTRY env -> local monorepo
  * registry (dev) -> hosted default.
  */
 export function resolveRegistry(override?: string): RegistrySource {
-  const raw = override ?? process.env.ASTRO_SB_AUTH_REGISTRY;
+  const raw = override ?? process.env.ASTRO_USERS_REGISTRY;
   if (raw) {
     if (/^https?:\/\//.test(raw)) return { kind: "remote", base: raw.replace(/\/$/, "") };
     return { kind: "local", base: resolve(raw) };

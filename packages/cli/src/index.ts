@@ -57,10 +57,10 @@ function parseArgs(argv: string[]): ParsedArgs {
 }
 
 const HELP = `
-${pc.bold("astro-sb-auth")} — install Astro SB Auth components into your Astro project.
+${pc.bold("astro-users")} — install Astro Users components into your Astro project.
 
 ${pc.bold("Usage")}
-  astro-sb-auth <command> [options]
+  astro-users <command> [options]
 
 ${pc.bold("Commands")}
   add <name...>     Copy component(s) into your src/ (with .env + config guidance)
@@ -71,21 +71,21 @@ ${pc.bold("Options")}
   --cwd <path>      Target project directory (default: current directory)
   --registry <ref>  Registry URL or local path (default: local dev / hosted)
   -y, --yes         Non-interactive; skip prompts and confirmations
-  -f, --force       Overwrite existing files instead of writing *.astro-sb-auth-new
+  -f, --force       Overwrite existing files instead of writing *.astro-users-new
   -h, --help        Show help
   -v, --version     Show version
 
 ${pc.bold("Examples")}
-  ${pc.dim("$")} astro-sb-auth list
-  ${pc.dim("$")} astro-sb-auth add auth
-  ${pc.dim("$")} astro-sb-auth add auth --cwd ./my-site
+  ${pc.dim("$")} astro-users list
+  ${pc.dim("$")} astro-users add auth
+  ${pc.dim("$")} astro-users add auth --cwd ./my-site
 `;
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
 
   if (args.version) {
-    console.log("astro-sb-auth 0.1.0");
+    console.log("astro-users 0.1.0");
     return 0;
   }
   if (args.help || !args.command || args.command === "help") {

@@ -1,10 +1,10 @@
 {
-  "name": "@astro-sb-auth/cli",
+  "name": "@astro-users/cli",
   "version": "0.1.0",
-  "description": "Install Astro SB Auth components into your Astro project — copied into your src/, fully yours to edit.",
+  "description": "Install Astro Users components into your Astro project — copied into your src/, fully yours to edit.",
   "type": "module",
   "bin": {
-    "astro-sb-auth": "dist/index.js"
+    "astro-users": "dist/index.js"
   },
   "files": [
     "dist"
@@ -19,7 +19,7 @@
   },
   "keywords": [
     "astro",
-    "astro-sb-auth",
+    "astro-users",
     "auth",
     "cli",
     "scaffold"
