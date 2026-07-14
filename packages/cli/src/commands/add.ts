@@ -32,7 +32,7 @@ export interface AddOptions {
   adapter?: string;
 }
 
-const KNOWN_ADAPTERS = ["node", "cloudflare", "vercel", "netlify"] as const;
+const KNOWN_ADAPTERS = ["cloudflare", "node", "vercel", "netlify"] as const;
 
 export async function runAdd(names: string[], opts: AddOptions): Promise<number> {
   p.intro(pc.bgMagenta(pc.black(" Astro Users ")));
@@ -142,7 +142,7 @@ export async function runAdd(names: string[], opts: AddOptions): Promise<number>
 
   // Astro SSR: fix, don't just warn. `cfg.found` is already guaranteed true here.
   if (needsAdapter && !cfg.hasAdapter) {
-    const adapter = opts.adapter ?? (KNOWN_ADAPTERS as readonly string[])[0]!; // "node"
+    const adapter = opts.adapter ?? (KNOWN_ADAPTERS as readonly string[])[0]!; // "cloudflare"
     p.log.step(`Adding SSR adapter (${pc.cyan(`@astrojs/${adapter}`)})…`);
     const ok = runCommand("npx", ["astro", "add", adapter, "--yes"], project.root);
     if (!ok) {

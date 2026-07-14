@@ -81,7 +81,7 @@ ${pc.bold("Options")}
   --registry <ref>  Registry URL or local path (default: local dev / hosted)
   -y, --yes         Non-interactive; skip prompts and confirmations
   -f, --force       Overwrite existing files instead of writing *.astro-users-new
-  --adapter <name>  SSR adapter to auto-install if missing (default: node)
+  --adapter <name>  SSR adapter to auto-install if missing (default: cloudflare)
   --no-install      Skip auto-installing npm dependencies
   -h, --help        Show help
   -v, --version     Show version
