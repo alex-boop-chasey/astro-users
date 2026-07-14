@@ -62,7 +62,7 @@ with a `registry.json` manifest and its `files/`. No CLI changes needed.
 
 ```bash
 pnpm install                      # install workspace deps
-pnpm --filter @astro-users/cli build   # build the CLI to packages/cli/dist
+pnpm --filter astro-users build   # build the CLI to packages/cli/dist
 node packages/cli/dist/index.js list  # run it against the local registry
 
 # try a real install into a scratch project
@@ -98,5 +98,5 @@ Planned paid components (specs in `../Component-stack/`): `stripe`, `forms`, `co
 ## Naming
 
 - **Product line:** Astro Users · **CLI:** `astro-users`
-- **Flagship (free):** slug `auth`, marketed as `astro-auth` (alias: `astro-users`).
-- The legacy `astro-users` / `AstroAuth` / `Mindful Auth` labels are being retired.
+- **Flagship (free):** slug `auth`, marketed as `astro-auth`.
+- Legacy `astro-sb-auth` / `AstroStack` / `Mindful Auth` labels have been retired in favor of `astro-users`.

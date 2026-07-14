@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://astro-users.dev/registry/schema.json",
+  "$id": "https://raw.githubusercontent.com/alex-boop-chasey/astro-users/main/registry/schema.json",
   "title": "Astro Users component manifest",
   "type": "object",
   "required": ["name", "title", "description", "tier", "version", "files"],

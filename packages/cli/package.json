@@ -1,5 +1,5 @@
 {
-  "name": "@astro-users/cli",
+  "name": "astro-users",
   "version": "0.1.0",
   "description": "Install Astro Users components into your Astro project — copied into your src/, fully yours to edit.",
   "type": "module",
@@ -9,6 +9,14 @@
   "files": [
     "dist"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alex-boop-chasey/astro-users.git"
+  },
+  "homepage": "https://github.com/alex-boop-chasey/astro-users#readme",
+  "bugs": {
+    "url": "https://github.com/alex-boop-chasey/astro-users/issues"
+  },
   "engines": {
     "node": ">=18"
   },

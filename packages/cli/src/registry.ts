@@ -42,7 +42,8 @@ export interface RegistrySource {
 }
 
 /** Default hosted registry, used when no local registry and no override is found. */
-export const DEFAULT_REGISTRY_URL = "https://astro-users.dev/registry";
+export const DEFAULT_REGISTRY_URL =
+  "https://raw.githubusercontent.com/alex-boop-chasey/astro-users/main/registry";
 
 /**
  * Resolve where component manifests + files are read from.

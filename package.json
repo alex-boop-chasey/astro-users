@@ -1,5 +1,5 @@
 {
-  "name": "astro-users",
+  "name": "astro-users-monorepo",
   "version": "0.0.0",
   "private": true,
   "description": "Astro Users — a line of Astro-native components you install into your own src/ and fully own.",
@@ -8,8 +8,8 @@
     "node": ">=22.12.0"
   },
   "scripts": {
-    "cli": "pnpm --filter @astro-users/cli exec astro-users",
-    "cli:build": "pnpm --filter @astro-users/cli build"
+    "cli": "node packages/cli/dist/index.js",
+    "cli:build": "pnpm --filter astro-users build"
   },
   "packageManager": "pnpm@10.28.1"
 }
