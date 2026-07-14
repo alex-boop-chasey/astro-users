@@ -1,6 +1,6 @@
 {
   "name": "astro-users",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Install Astro Users components into your Astro project — copied into your src/, fully yours to edit.",
   "type": "module",
   "bin": {
