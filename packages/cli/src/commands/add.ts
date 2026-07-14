@@ -14,8 +14,11 @@ import {
 } from "../registry.js";
 import {
   checkAstroConfig,
+  detectPackageManager,
   detectProject,
+  ensureServerOutput,
   mergeEnv,
+  runCommand,
   writeComponentFile,
   type WriteResult,
 } from "../utils.js";
@@ -25,7 +28,11 @@ export interface AddOptions {
   registry?: string;
   force: boolean;
   yes: boolean;
+  noInstall?: boolean;
+  adapter?: string;
 }
+
+const KNOWN_ADAPTERS = ["node", "cloudflare", "vercel", "netlify"] as const;
 
 export async function runAdd(names: string[], opts: AddOptions): Promise<number> {
   p.intro(pc.bgMagenta(pc.black(" Astro Users ")));
@@ -68,6 +75,19 @@ export async function runAdd(names: string[], opts: AddOptions): Promise<number>
     return 1;
   }
   spin.stop(`Resolved ${manifests.length} component${manifests.length === 1 ? "" : "s"}`);
+
+  // Fail fast if this isn't a real Astro project — the installer adds to an
+  // existing project, it doesn't scaffold one from scratch.
+  const needsServer = manifests.some((m) => m.astro?.output === "server" || m.astro?.output === "hybrid");
+  const needsAdapter = manifests.some((m) => m.astro?.adapterRequired);
+  let cfg = await checkAstroConfig(project.root);
+  if ((needsServer || needsAdapter) && !cfg.found) {
+    p.log.error(
+      `No astro.config.* found in ${pc.cyan(project.root)}.\n  This installer adds components to an existing Astro project — it doesn't create one.\n  Run ${pc.cyan("npm create astro@latest")} first, then re-run this command inside it.`
+    );
+    p.outro(pc.red("Install aborted."));
+    return 1;
+  }
 
   // Pro gating (delivered in a later milestone).
   const pro = manifests.filter((m) => m.tier === "pro");
@@ -120,28 +140,45 @@ export async function runAdd(names: string[], opts: AddOptions): Promise<number>
   // Environment variables.
   await handleEnv(project.root, manifests, opts, source);
 
-  // Astro SSR sanity check.
-  const needsServer = manifests.some((m) => m.astro?.output === "server" || m.astro?.output === "hybrid");
-  const needsAdapter = manifests.some((m) => m.astro?.adapterRequired);
-  if (needsServer || needsAdapter) {
-    const cfg = await checkAstroConfig(project.root);
-    const warns: string[] = [];
-    if (!cfg.found) warns.push("No astro.config.* found — add one with an SSR adapter.");
-    else {
-      if (needsServer && !cfg.isServer)
-        warns.push(`Set ${pc.cyan("output: 'server'")} in ${cfg.configPath}.`);
-      if (needsAdapter && !cfg.hasAdapter)
-        warns.push(`Add an SSR ${pc.cyan("adapter")} (e.g. @astrojs/cloudflare) in ${cfg.configPath}.`);
+  // Astro SSR: fix, don't just warn. `cfg.found` is already guaranteed true here.
+  if (needsAdapter && !cfg.hasAdapter) {
+    const adapter = opts.adapter ?? (KNOWN_ADAPTERS as readonly string[])[0]!; // "node"
+    p.log.step(`Adding SSR adapter (${pc.cyan(`@astrojs/${adapter}`)})…`);
+    const ok = runCommand("npx", ["astro", "add", adapter, "--yes"], project.root);
+    if (!ok) {
+      p.log.error(
+        `Failed to auto-install the ${adapter} adapter. Run ${pc.cyan(`npx astro add ${adapter}`)} yourself, then re-run this command.`
+      );
+    } else {
+      cfg = await checkAstroConfig(project.root);
     }
-    if (warns.length > 0) p.log.warn("Astro config:\n  " + warns.join("\n  "));
+  }
+  if (needsServer && cfg.found && !cfg.isServer) {
+    const patched = await ensureServerOutput(project.root, cfg.configPath!);
+    if (patched) {
+      p.log.success(`Set ${pc.cyan("output: 'server'")} in ${cfg.configPath}.`);
+    } else {
+      p.log.warn(`Could not automatically set ${pc.cyan("output: 'server'")} in ${cfg.configPath} — add it yourself.`);
+    }
   }
 
-  // Dependency install hint.
+  // Dependency install: just do it, don't make the user copy-paste a command.
   if (depNames.length > 0) {
     const pm = detectPackageManager(project.root);
-    p.log.info(
-      `Install dependencies:\n  ${pc.cyan(`${pm} ${pm === "npm" ? "install" : "add"} ${depNames.join(" ")}`)}`
-    );
+    if (opts.noInstall) {
+      p.log.info(
+        `Install dependencies:\n  ${pc.cyan(`${pm} ${pm === "npm" ? "install" : "add"} ${depNames.join(" ")}`)}`
+      );
+    } else {
+      p.log.step(`Installing dependencies with ${pc.cyan(pm)}…`);
+      const installArgs = pm === "npm" ? ["install", ...depNames] : ["add", ...depNames];
+      const ok = runCommand(pm, installArgs, project.root);
+      if (!ok) {
+        p.log.error(
+          `Dependency install failed. Run it yourself:\n  ${pc.cyan(`${pm} ${pm === "npm" ? "install" : "add"} ${depNames.join(" ")}`)}`
+        );
+      }
+    }
   }
 
   // Post-install notes.
@@ -219,12 +256,6 @@ async function handleEnv(
   if (merged.added.length > 0)
     p.log.success(`Wrote ${merged.added.length} variable(s) to .env: ${merged.added.join(", ")}`);
   if (merged.skipped.length > 0) p.log.info(pc.dim(`Left existing: ${merged.skipped.join(", ")}`));
-}
-
-function detectPackageManager(root: string): "pnpm" | "yarn" | "npm" {
-  if (existsSync(join(root, "pnpm-lock.yaml"))) return "pnpm";
-  if (existsSync(join(root, "yarn.lock"))) return "yarn";
-  return "npm";
 }
 
 export async function describeComponent(name: string, registry?: string): Promise<Manifest> {

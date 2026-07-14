@@ -11,6 +11,8 @@ interface ParsedArgs {
   yes: boolean;
   help: boolean;
   version: boolean;
+  noInstall: boolean;
+  adapter?: string;
 }
 
 function parseArgs(argv: string[]): ParsedArgs {
@@ -21,6 +23,7 @@ function parseArgs(argv: string[]): ParsedArgs {
     yes: false,
     help: false,
     version: false,
+    noInstall: false,
   };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i]!;
@@ -38,6 +41,12 @@ function parseArgs(argv: string[]): ParsedArgs {
       case "--yes":
       case "-y":
         out.yes = true;
+        break;
+      case "--no-install":
+        out.noInstall = true;
+        break;
+      case "--adapter":
+        out.adapter = argv[++i];
         break;
       case "--help":
       case "-h":
@@ -72,6 +81,8 @@ ${pc.bold("Options")}
   --registry <ref>  Registry URL or local path (default: local dev / hosted)
   -y, --yes         Non-interactive; skip prompts and confirmations
   -f, --force       Overwrite existing files instead of writing *.astro-users-new
+  --adapter <name>  SSR adapter to auto-install if missing (default: node)
+  --no-install      Skip auto-installing npm dependencies
   -h, --help        Show help
   -v, --version     Show version
 
@@ -100,6 +111,8 @@ async function main() {
         registry: args.registry,
         force: args.force,
         yes: args.yes,
+        noInstall: args.noInstall,
+        adapter: args.adapter,
       });
     case "list":
     case "ls":

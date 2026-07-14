@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
+import { spawnSync } from "node:child_process";
 
 export interface ProjectInfo {
   root: string;
@@ -133,4 +134,32 @@ export async function checkAstroConfig(root: string): Promise<AstroConfigCheck> 
 
 function escapeRegExp(s: string) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** Run a CLI command, streaming its output live. Returns true on exit code 0. */
+export function runCommand(cmd: string, args: string[], cwd: string): boolean {
+  const result = spawnSync(cmd, args, { cwd, stdio: "inherit", shell: process.platform === "win32" });
+  return result.status === 0;
+}
+
+/**
+ * Insert `output: 'server'` as the first property of `defineConfig({ ... })`
+ * if it isn't already set. Best-effort string patch, not an AST rewrite.
+ */
+export async function ensureServerOutput(root: string, configPath: string): Promise<boolean> {
+  const abs = join(root, configPath);
+  const src = await readFile(abs, "utf8");
+  if (/output\s*:\s*['"](server|hybrid)['"]/.test(src)) return true;
+  const match = src.match(/defineConfig\(\s*\{/);
+  if (!match || match.index === undefined) return false;
+  const insertAt = match.index + match[0].length;
+  const patched = `${src.slice(0, insertAt)}\n  output: 'server',${src.slice(insertAt)}`;
+  await writeFile(abs, patched, "utf8");
+  return true;
+}
+
+export function detectPackageManager(root: string): "pnpm" | "yarn" | "npm" {
+  if (existsSync(join(root, "pnpm-lock.yaml"))) return "pnpm";
+  if (existsSync(join(root, "yarn.lock"))) return "yarn";
+  return "npm";
 }
