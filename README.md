@@ -17,8 +17,6 @@ The files land in your project. You can read, edit, and delete every line.
 
 ```
 astro-users/
-├── apps/
-│   └── web/           # the original working auth site — now the live demo / dev playground
 ├── packages/
 │   └── cli/           # the `astro-users` installer (TypeScript, built with tsup)
 ├── registry/          # source of truth for installable components
@@ -71,11 +69,10 @@ node packages/cli/dist/index.js list  # run it against the local registry
 node packages/cli/dist/index.js add auth --cwd /path/to/some/astro-project
 ```
 
-The demo site still runs on its own:
-
-```bash
-pnpm --filter web dev
-```
+This repo intentionally has no demo app of its own — the installer and any demo it
+produces are kept in separate projects so the demo can never mask drift between what's
+in `registry/` and what actually gets installed. See `../astro-users-demo` for a working
+demo built by running the installer above.
 
 ---
 

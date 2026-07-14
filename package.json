@@ -9,9 +9,7 @@
   },
   "scripts": {
     "cli": "pnpm --filter @astro-users/cli exec astro-users",
-    "cli:build": "pnpm --filter @astro-users/cli build",
-    "web:dev": "pnpm --filter web dev",
-    "web:build": "pnpm --filter web build"
+    "cli:build": "pnpm --filter @astro-users/cli build"
   },
   "packageManager": "pnpm@10.28.1"
 }
