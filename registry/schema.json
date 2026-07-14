@@ -34,31 +34,70 @@
     },
     "files": {
       "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["path", "target"],
-        "properties": {
-          "path": { "type": "string", "description": "Path within the component's files/ dir" },
-          "target": { "type": "string", "description": "Destination path relative to the project root" },
-          "type": { "type": "string" }
-        }
-      }
+      "items": { "$ref": "#/$defs/file" }
     },
     "env": {
       "type": "array",
+      "items": { "$ref": "#/$defs/envVar" }
+    },
+    "variants": {
+      "type": "array",
+      "description": "Install-time choices that swap in provider-specific files/env/deps (e.g. CAPTCHA provider)",
       "items": {
         "type": "object",
-        "required": ["name"],
+        "required": ["id", "options"],
         "properties": {
-          "name": { "type": "string" },
-          "prompt": { "type": "string" },
-          "required": { "type": "boolean" },
-          "public": { "type": "boolean" },
-          "secret": { "type": "boolean" },
-          "example": { "type": "string" }
+          "id": { "type": "string", "description": "Variant slug, e.g. \"captcha\"", "pattern": "^[a-z][a-z0-9-]*$" },
+          "prompt": { "type": "string", "description": "Question shown when selecting interactively" },
+          "default": { "type": "string", "description": "Option id used non-interactively (--yes) or as the initial selection" },
+          "options": {
+            "type": "object",
+            "description": "Map of option id -> what installing that option contributes",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "label": { "type": "string" },
+                "hint": { "type": "string" },
+                "files": {
+                  "type": "array",
+                  "items": { "$ref": "#/$defs/file" },
+                  "description": "Files read from variants/<id>/<option>/<path>"
+                },
+                "env": { "type": "array", "items": { "$ref": "#/$defs/envVar" } },
+                "npmDependencies": {
+                  "type": "object",
+                  "additionalProperties": { "type": "string" }
+                },
+                "postInstall": { "type": "array", "items": { "type": "string" } }
+              }
+            }
+          }
         }
       }
     },
     "postInstall": { "type": "array", "items": { "type": "string" } }
+  },
+  "$defs": {
+    "file": {
+      "type": "object",
+      "required": ["path", "target"],
+      "properties": {
+        "path": { "type": "string", "description": "Path within the component's files/ dir (or a variant option dir)" },
+        "target": { "type": "string", "description": "Destination path relative to the project root" },
+        "type": { "type": "string" }
+      }
+    },
+    "envVar": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string" },
+        "prompt": { "type": "string" },
+        "required": { "type": "boolean" },
+        "public": { "type": "boolean" },
+        "secret": { "type": "boolean" },
+        "example": { "type": "string" }
+      }
+    }
   }
 }

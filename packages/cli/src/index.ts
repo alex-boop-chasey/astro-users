@@ -13,6 +13,7 @@ interface ParsedArgs {
   version: boolean;
   noInstall: boolean;
   adapter?: string;
+  captcha?: string;
 }
 
 function parseArgs(argv: string[]): ParsedArgs {
@@ -48,6 +49,9 @@ function parseArgs(argv: string[]): ParsedArgs {
       case "--adapter":
         out.adapter = argv[++i];
         break;
+      case "--captcha":
+        out.captcha = argv[++i];
+        break;
       case "--help":
       case "-h":
         out.help = true;
@@ -82,6 +86,7 @@ ${pc.bold("Options")}
   -y, --yes         Non-interactive; skip prompts and confirmations
   -f, --force       Overwrite existing files instead of writing *.astro-users-new
   --adapter <name>  SSR adapter to auto-install if missing (default: cloudflare)
+  --captcha <name>  CAPTCHA provider for auth: cloudflare | google | none (default: cloudflare)
   --no-install      Skip auto-installing npm dependencies
   -h, --help        Show help
   -v, --version     Show version
@@ -89,6 +94,7 @@ ${pc.bold("Options")}
 ${pc.bold("Examples")}
   ${pc.dim("$")} astro-users list
   ${pc.dim("$")} astro-users add auth
+  ${pc.dim("$")} astro-users add auth --captcha google
   ${pc.dim("$")} astro-users add auth --cwd ./my-site
 `;
 
@@ -113,6 +119,7 @@ async function main() {
         yes: args.yes,
         noInstall: args.noInstall,
         adapter: args.adapter,
+        captcha: args.captcha,
       });
     case "list":
     case "ls":

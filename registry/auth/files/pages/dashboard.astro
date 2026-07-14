@@ -58,7 +58,7 @@ const joinDate = user.created_at ? new Date(user.created_at).toLocaleDateString(
           <div class="welcome-text">
             <span class="badge">Astro Community Member</span>
             <h1>Welcome, {userName}!</h1>
-            <p>You have successfully logged in using your Supabase account. Your session is protected by Cloudflare Turnstile CAPTCHA.</p>
+            <p>You have successfully logged in using your Supabase account. Your session is protected by CAPTCHA and honeypot spam protection.</p>
           </div>
           <div class="welcome-stats">
             <div class="stat-pill">
@@ -117,8 +117,8 @@ const joinDate = user.created_at ? new Date(user.created_at).toLocaleDateString(
                 <span class="value code">server</span>
               </div>
               <div class="metadata-item">
-                <span class="label">CSRF Shield</span>
-                <span class="value text-success">Turnstile Active</span>
+                <span class="label">Spam Shield</span>
+                <span class="value text-success">CAPTCHA + Honeypot</span>
               </div>
               <div class="metadata-item">
                 <span class="label">Database</span>

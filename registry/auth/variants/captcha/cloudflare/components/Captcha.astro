@@ -1,0 +1,14 @@
+---
+// Cloudflare Turnstile widget. The site key is public and read at build time.
+const SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || import.meta.env.TURNSTILE_SITE_KEY;
+---
+
+<div
+  class="cf-turnstile"
+  id="turnstile-widget"
+  data-sitekey={SITE_KEY}
+  data-theme="dark"
+></div>
+
+<!-- Turnstile loader. Injects a hidden <input name="cf-turnstile-response"> into the form. -->
+<script is:inline async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>

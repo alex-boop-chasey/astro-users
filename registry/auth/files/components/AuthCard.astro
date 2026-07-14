@@ -1,10 +1,11 @@
 ---
+import Captcha from './Captcha.astro';
+
 interface Props {
   initialMode?: 'login' | 'signup';
 }
 
 const { initialMode = 'login' } = Astro.props;
-const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || import.meta.env.TURNSTILE_SITE_KEY;
 ---
 
 <div class="auth-card-container">
@@ -140,15 +141,10 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || import.m
         </div>
       </div>
 
-      <!-- Cloudflare Turnstile CAPTCHA -->
-      <div class="turnstile-container">
-        <div 
-          class="cf-turnstile" 
-          id="turnstile-widget"
-          data-sitekey={TURNSTILE_SITE_KEY} 
-          data-theme="dark"
-        ></div>
-        <span class="field-error" id="turnstile-error"></span>
+      <!-- CAPTCHA (provider chosen at install time; renders nothing when disabled) -->
+      <div class="captcha-container">
+        <Captcha />
+        <span class="field-error" id="captcha-error"></span>
       </div>
 
       <!-- Submit Button -->
@@ -162,11 +158,9 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || import.m
   </div>
 </div>
 
-<!-- Load Turnstile Script -->
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-
 <script>
   import { actions, isActionError } from 'astro:actions';
+  import { captchaRequired, getCaptchaToken, resetCaptcha } from '../lib/captcha.client';
 
   // State
   let currentMode = document.querySelector('.auth-tab.active')?.getAttribute('data-mode') || 'login';
@@ -196,7 +190,7 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || import.m
   const nameError = document.getElementById('name-error') as HTMLSpanElement;
   const emailError = document.getElementById('email-error') as HTMLSpanElement;
   const passwordError = document.getElementById('password-error') as HTMLSpanElement;
-  const turnstileError = document.getElementById('turnstile-error') as HTMLSpanElement;
+  const captchaError = document.getElementById('captcha-error') as HTMLSpanElement;
 
   // Toggle Mode
   function setMode(mode: 'login' | 'signup') {
@@ -239,8 +233,8 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || import.m
       window.history.pushState(null, '', '/signup');
     }
 
-    // Reset turnstile widget when switching modes
-    resetTurnstile();
+    // Reset the CAPTCHA widget when switching modes
+    resetCaptcha();
   }
 
   // Event Listeners for tabs
@@ -286,7 +280,7 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || import.m
     nameError.textContent = '';
     emailError.textContent = '';
     passwordError.textContent = '';
-    turnstileError.textContent = '';
+    captchaError.textContent = '';
     
     nameInput.classList.remove('error');
     emailInput.classList.remove('error');
@@ -334,21 +328,12 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || import.m
       isValid = false;
     }
 
-    const formData = new FormData(form);
-    const turnstileToken = formData.get('cf-turnstile-response') as string;
-    
-    if (!turnstileToken) {
-      turnstileError.textContent = 'Please complete the security challenge.';
+    if (captchaRequired && !getCaptchaToken()) {
+      captchaError.textContent = 'Please complete the security challenge.';
       isValid = false;
     }
 
     return isValid;
-  }
-
-  function resetTurnstile() {
-    if (typeof (window as any).turnstile !== 'undefined') {
-      (window as any).turnstile.reset();
-    }
   }
 
   // Form Submission
@@ -365,23 +350,22 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || import.m
     btnText.classList.add('invisible');
     btnSpinner.classList.remove('hidden');
 
-    const formData = new FormData(form);
     const email = emailInput.value;
     const password = passwordInput.value;
     const name = nameInput.value;
-    const turnstileToken = formData.get('cf-turnstile-response') as string;
+    const captchaToken = getCaptchaToken();
 
     try {
       if (currentMode === 'login') {
-        const { data, error } = await actions.signIn({ email, password, turnstileToken });
-        
+        const { data, error } = await actions.signIn({ email, password, captchaToken });
+
         if (error) {
           if (isActionError(error)) {
             showAlert(error.message, 'error');
           } else {
             showAlert('An unexpected error occurred. Please try again.', 'error');
           }
-          resetTurnstile();
+          resetCaptcha();
         } else if (data?.success) {
           showAlert('Login successful! Redirecting...', 'success');
           setTimeout(() => {
@@ -389,15 +373,15 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || import.m
           }, 1000);
         }
       } else {
-        const { data, error } = await actions.signUp({ name, email, password, turnstileToken });
-        
+        const { data, error } = await actions.signUp({ name, email, password, captchaToken });
+
         if (error) {
           if (isActionError(error)) {
             showAlert(error.message, 'error');
           } else {
             showAlert('An unexpected error occurred. Please try again.', 'error');
           }
-          resetTurnstile();
+          resetCaptcha();
         } else if (data?.success) {
           if (data.hasSession) {
             showAlert('Login successful! Redirecting...', 'success');
@@ -411,7 +395,7 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || import.m
       }
     } catch (err: any) {
       showAlert('Network error. Please try again.', 'error');
-      resetTurnstile();
+      resetCaptcha();
     } finally {
       // Clear loading state
       submitBtn.disabled = false;
@@ -714,12 +698,19 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || import.m
   }
 
   /* Captcha styling */
-  .turnstile-container {
+  .captcha-container {
     display: flex;
     flex-direction: column;
     gap: 6px;
     align-items: center;
     margin: 8px 0;
+  }
+
+  /* Collapse the spacing when no CAPTCHA widget is rendered (provider "none"),
+     i.e. the only child is the error span. */
+  .captcha-container:has(> .field-error:only-child) {
+    margin: 0;
+    gap: 0;
   }
 
   /* Submit button styling */

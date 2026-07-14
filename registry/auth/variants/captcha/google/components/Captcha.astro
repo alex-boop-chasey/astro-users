@@ -1,0 +1,14 @@
+---
+// Google reCAPTCHA v2 ("I'm not a robot" checkbox). The site key is public.
+const SITE_KEY = import.meta.env.PUBLIC_RECAPTCHA_SITE_KEY || import.meta.env.RECAPTCHA_SITE_KEY;
+---
+
+<div
+  class="g-recaptcha"
+  id="recaptcha-widget"
+  data-sitekey={SITE_KEY}
+  data-theme="dark"
+></div>
+
+<!-- reCAPTCHA loader. Injects a hidden <textarea name="g-recaptcha-response"> into the form. -->
+<script is:inline async defer src="https://www.google.com/recaptcha/api.js"></script>

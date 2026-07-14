@@ -4,9 +4,9 @@
   "title": "Astro Auth",
   "npmName": "astro-auth",
   "aliases": ["astro-users"],
-  "description": "Email/password authentication for Astro with Supabase SSR, Cloudflare Turnstile, honeypot spam protection, and protected-route middleware. Server-rendered, edge-ready, and fully yours to edit.",
+  "description": "Email/password authentication for Astro with Supabase SSR, a choice of CAPTCHA provider (Cloudflare Turnstile, Google reCAPTCHA, or none), honeypot spam protection, and protected-route middleware. Server-rendered, edge-ready, and fully yours to edit.",
   "tier": "free",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "homepage": "https://github.com/alex-boop-chasey/astro-users#readme",
   "license": "MIT",
   "requires": [],
@@ -30,16 +30,67 @@
     { "path": "pages/dashboard.astro", "target": "src/pages/dashboard.astro", "type": "page" },
     { "path": "pages/check-email.astro", "target": "src/pages/check-email.astro", "type": "page" }
   ],
+  "variants": [
+    {
+      "id": "captcha",
+      "prompt": "CAPTCHA provider",
+      "default": "cloudflare",
+      "options": {
+        "cloudflare": {
+          "label": "Cloudflare Turnstile",
+          "hint": "Free, privacy-friendly, no user puzzles",
+          "files": [
+            { "path": "components/Captcha.astro", "target": "src/components/Captcha.astro", "type": "component" },
+            { "path": "lib/captcha.client.ts", "target": "src/lib/captcha.client.ts", "type": "lib" },
+            { "path": "actions/captcha.ts", "target": "src/actions/captcha.ts", "type": "actions" }
+          ],
+          "env": [
+            { "name": "PUBLIC_TURNSTILE_SITE_KEY", "prompt": "Cloudflare Turnstile site key", "required": true, "public": true },
+            { "name": "TURNSTILE_SECRET_KEY", "prompt": "Cloudflare Turnstile secret key", "required": true, "secret": true }
+          ],
+          "postInstall": [
+            "Create a Cloudflare Turnstile widget at https://dash.cloudflare.com/?to=/:account/turnstile and paste its site + secret keys when prompted."
+          ]
+        },
+        "google": {
+          "label": "Google reCAPTCHA v2 (checkbox)",
+          "hint": "The classic \"I'm not a robot\" checkbox",
+          "files": [
+            { "path": "components/Captcha.astro", "target": "src/components/Captcha.astro", "type": "component" },
+            { "path": "lib/captcha.client.ts", "target": "src/lib/captcha.client.ts", "type": "lib" },
+            { "path": "actions/captcha.ts", "target": "src/actions/captcha.ts", "type": "actions" }
+          ],
+          "env": [
+            { "name": "PUBLIC_RECAPTCHA_SITE_KEY", "prompt": "Google reCAPTCHA v2 site key", "required": true, "public": true },
+            { "name": "RECAPTCHA_SECRET_KEY", "prompt": "Google reCAPTCHA v2 secret key", "required": true, "secret": true }
+          ],
+          "postInstall": [
+            "Register a reCAPTCHA v2 \"I'm not a robot\" site at https://www.google.com/recaptcha/admin/create and paste its site + secret keys when prompted."
+          ]
+        },
+        "none": {
+          "label": "None (honeypot only)",
+          "hint": "No CAPTCHA widget; keeps the hidden honeypot field",
+          "files": [
+            { "path": "components/Captcha.astro", "target": "src/components/Captcha.astro", "type": "component" },
+            { "path": "lib/captcha.client.ts", "target": "src/lib/captcha.client.ts", "type": "lib" },
+            { "path": "actions/captcha.ts", "target": "src/actions/captcha.ts", "type": "actions" }
+          ],
+          "env": [],
+          "postInstall": [
+            "No CAPTCHA configured — the honeypot field still blocks basic bots. Add a provider later with: astro-users add auth --captcha cloudflare (or --captcha google)."
+          ]
+        }
+      }
+    }
+  ],
   "env": [
     { "name": "PUBLIC_SUPABASE_URL", "prompt": "Supabase project URL", "required": true, "public": true, "example": "https://xxxxxxxx.supabase.co" },
     { "name": "PUBLIC_SUPABASE_ANON_KEY", "prompt": "Supabase anon / public key", "required": true, "public": true },
-    { "name": "PUBLIC_TURNSTILE_SITE_KEY", "prompt": "Cloudflare Turnstile site key", "required": true, "public": true },
-    { "name": "TURNSTILE_SECRET_KEY", "prompt": "Cloudflare Turnstile secret key", "required": true, "secret": true },
     { "name": "PUBLIC_SITE_URL", "prompt": "Public site URL for email-confirmation redirects (optional)", "required": false, "public": true, "example": "https://example.com" }
   ],
   "postInstall": [
     "Enable the Email provider in Supabase (Authentication -> Providers).",
-    "Create a Cloudflare Turnstile widget and paste its site + secret keys when prompted.",
     "Protected route: /dashboard. Auth routes: /login and /signup (redirect to /dashboard when signed in).",
     "Ensure your Astro config uses output: 'server' with an SSR adapter, then start your dev server and open /login."
   ]

@@ -6,11 +6,13 @@ import pc from "picocolors";
 import {
   loadManifest,
   readComponentFile,
+  readVariantFile,
   resolveInstallPlan,
   resolveRegistry,
   type ComponentEnv,
   type Manifest,
-  type RegistrySource,
+  type Variant,
+  type VariantOption,
 } from "../registry.js";
 import {
   checkAstroConfig,
@@ -30,6 +32,16 @@ export interface AddOptions {
   yes: boolean;
   noInstall?: boolean;
   adapter?: string;
+  /** Chosen option for the "captcha" variant (e.g. "cloudflare" | "google" | "none"). */
+  captcha?: string;
+}
+
+/** A variant choice resolved for a specific component during an install. */
+interface ResolvedVariant {
+  component: string;
+  variant: Variant;
+  optionId: string;
+  option: VariantOption;
 }
 
 const KNOWN_ADAPTERS = ["cloudflare", "node", "vercel", "netlify"] as const;
@@ -99,15 +111,27 @@ export async function runAdd(names: string[], opts: AddOptions): Promise<number>
     return 1;
   }
 
-  // Aggregate npm deps.
+  // Resolve install-time variants (e.g. CAPTCHA provider) — via flag, prompt, or default.
+  const variantChoices = await resolveVariants(manifests, opts);
+  if (variantChoices === null) {
+    p.outro(pc.red("Install aborted."));
+    return 1;
+  }
+
+  // Aggregate npm deps (base component + chosen variant options).
   const npmDeps: Record<string, string> = {};
   for (const m of manifests) Object.assign(npmDeps, m.npmDependencies ?? {});
+  for (const c of variantChoices) Object.assign(npmDeps, c.option.npmDependencies ?? {});
 
   // Show the plan.
   const planLines: string[] = [];
   for (const m of manifests) {
     planLines.push(pc.bold(`${m.title} ${pc.dim(`v${m.version} · ${m.tier}`)}`));
     for (const f of m.files) planLines.push(`  ${pc.green("+")} ${f.target}`);
+    for (const c of variantChoices.filter((v) => v.component === m.name)) {
+      planLines.push(`  ${pc.dim(`${c.variant.id}: ${c.option.label ?? c.optionId}`)}`);
+      for (const f of c.option.files ?? []) planLines.push(`  ${pc.green("+")} ${f.target}`);
+    }
   }
   const depNames = Object.keys(npmDeps);
   if (depNames.length > 0) {
@@ -124,21 +148,36 @@ export async function runAdd(names: string[], opts: AddOptions): Promise<number>
     }
   }
 
+  // Build the full file list: base component files + chosen variant files.
+  const plannedFiles: { target: string; read: () => Promise<string> }[] = [];
+  for (const m of manifests) {
+    for (const f of m.files) plannedFiles.push({ target: f.target, read: () => readComponentFile(source, m, f) });
+    for (const c of variantChoices.filter((v) => v.component === m.name)) {
+      for (const f of c.option.files ?? [])
+        plannedFiles.push({
+          target: f.target,
+          read: () => readVariantFile(source, c.component, c.variant.id, c.optionId, f),
+        });
+    }
+  }
+
   // Write files.
   const results: WriteResult[] = [];
   const write = p.spinner();
   write.start("Writing files");
-  for (const m of manifests) {
-    for (const f of m.files) {
-      const content = await readComponentFile(source, m, f);
-      results.push(await writeComponentFile(project.root, f.target, content, opts.force));
-    }
+  for (const f of plannedFiles) {
+    const content = await f.read();
+    results.push(await writeComponentFile(project.root, f.target, content, opts.force));
   }
   write.stop("Files written");
   renderFileResults(results);
 
-  // Environment variables.
-  await handleEnv(project.root, manifests, opts, source);
+  // Environment variables (base component + chosen variant options).
+  const envEntries: ComponentEnv[] = [
+    ...manifests.flatMap((m) => m.env ?? []),
+    ...variantChoices.flatMap((c) => c.option.env ?? []),
+  ];
+  await handleEnv(project.root, envEntries, opts);
 
   // Astro SSR: fix, don't just warn. `cfg.found` is already guaranteed true here.
   if (needsAdapter && !cfg.hasAdapter) {
@@ -181,8 +220,11 @@ export async function runAdd(names: string[], opts: AddOptions): Promise<number>
     }
   }
 
-  // Post-install notes.
-  const notes = manifests.flatMap((m) => (m.postInstall ?? []).map((line) => `• ${line}`));
+  // Post-install notes (base component + chosen variant options).
+  const notes = [
+    ...manifests.flatMap((m) => m.postInstall ?? []),
+    ...variantChoices.flatMap((c) => c.option.postInstall ?? []),
+  ].map((line) => `• ${line}`);
   if (notes.length > 0) p.note(notes.join("\n"), "Next steps");
 
   p.outro(pc.green(`Installed ${manifests.map((m) => m.name).join(", ")}. Happy building.`));
@@ -212,15 +254,64 @@ function renderFileResults(results: WriteResult[]) {
   }
 }
 
-async function handleEnv(
-  root: string,
+/**
+ * Resolve each manifest's variants to a concrete option — from an explicit flag,
+ * an interactive prompt, or the manifest default (under --yes). Returns null if the
+ * user passed an unknown option id or cancelled a prompt.
+ */
+async function resolveVariants(
   manifests: Manifest[],
-  opts: AddOptions,
-  _source: RegistrySource
-) {
-  // Collect unique env entries across all manifests.
+  opts: AddOptions
+): Promise<ResolvedVariant[] | null> {
+  const choices: ResolvedVariant[] = [];
+  for (const m of manifests) {
+    for (const v of m.variants ?? []) {
+      const optionIds = Object.keys(v.options);
+      if (optionIds.length === 0) continue;
+
+      // Explicit flag (currently only --captcha maps to the "captcha" variant).
+      const override = v.id === "captcha" ? opts.captcha : undefined;
+      let optionId: string | undefined = override;
+
+      if (optionId && !v.options[optionId]) {
+        p.log.error(
+          `Unknown ${v.id} option ${pc.cyan(optionId)}. Choose one of: ${optionIds.map((o) => pc.cyan(o)).join(", ")}.`
+        );
+        return null;
+      }
+
+      if (!optionId) {
+        const fallback = v.default && v.options[v.default] ? v.default : optionIds[0]!;
+        if (opts.yes) {
+          optionId = fallback;
+        } else {
+          const sel = await p.select({
+            message: `${m.title}: ${v.prompt ?? v.id}`,
+            initialValue: fallback,
+            options: optionIds.map((id) => ({
+              value: id,
+              label: v.options[id]!.label ?? id,
+              hint: v.options[id]!.hint,
+            })),
+          });
+          if (p.isCancel(sel)) {
+            p.cancel("Cancelled.");
+            return null;
+          }
+          optionId = sel as string;
+        }
+      }
+
+      choices.push({ component: m.name, variant: v, optionId, option: v.options[optionId]! });
+    }
+  }
+  return choices;
+}
+
+async function handleEnv(root: string, allEntries: ComponentEnv[], opts: AddOptions) {
+  // Collect unique env entries, first definition wins.
   const entries = new Map<string, ComponentEnv>();
-  for (const m of manifests) for (const e of m.env ?? []) if (!entries.has(e.name)) entries.set(e.name, e);
+  for (const e of allEntries) if (!entries.has(e.name)) entries.set(e.name, e);
   if (entries.size === 0) return;
 
   // Which are already defined in .env?

@@ -18,6 +18,24 @@ export interface ComponentEnv {
   example?: string;
 }
 
+/** What installing one option of a variant contributes on top of the base component. */
+export interface VariantOption {
+  label?: string;
+  hint?: string;
+  files?: ComponentFile[];
+  env?: ComponentEnv[];
+  npmDependencies?: Record<string, string>;
+  postInstall?: string[];
+}
+
+/** An install-time choice (e.g. "captcha") that swaps in provider-specific files. */
+export interface Variant {
+  id: string;
+  prompt?: string;
+  default?: string;
+  options: Record<string, VariantOption>;
+}
+
 export interface Manifest {
   name: string;
   title: string;
@@ -32,6 +50,7 @@ export interface Manifest {
   npmDependencies?: Record<string, string>;
   astro?: { output?: "static" | "server" | "hybrid"; adapterRequired?: boolean };
   files: ComponentFile[];
+  variants?: Variant[];
   env?: ComponentEnv[];
   postInstall?: string[];
 }
@@ -111,6 +130,20 @@ export async function loadManifest(source: RegistrySource, name: string): Promis
 /** Read the raw contents of a component file listed in a manifest. */
 export function readComponentFile(source: RegistrySource, manifest: Manifest, file: ComponentFile) {
   return readSourceText(source, `${manifest.name}/files/${file.path}`);
+}
+
+/**
+ * Read a variant option's file. These live under
+ * `<component>/variants/<variantId>/<optionId>/<file.path>`.
+ */
+export function readVariantFile(
+  source: RegistrySource,
+  componentName: string,
+  variantId: string,
+  optionId: string,
+  file: ComponentFile
+) {
+  return readSourceText(source, `${componentName}/variants/${variantId}/${optionId}/${file.path}`);
 }
 
 /**
