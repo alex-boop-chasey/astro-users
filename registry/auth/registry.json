@@ -3,11 +3,11 @@
   "name": "auth",
   "title": "Astro Auth",
   "npmName": "astro-auth",
-  "aliases": ["astro-supabase-auth"],
+  "aliases": ["astro-sb-auth"],
   "description": "Email/password authentication for Astro with Supabase SSR, Cloudflare Turnstile, honeypot spam protection, and protected-route middleware. Server-rendered, edge-ready, and fully yours to edit.",
   "tier": "free",
   "version": "0.1.0",
-  "homepage": "https://astrostack.dev/components/auth",
+  "homepage": "https://astro-sb-auth.dev/components/auth",
   "license": "MIT",
   "requires": [],
   "npmDependencies": {

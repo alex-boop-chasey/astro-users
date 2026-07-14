@@ -1,15 +1,15 @@
 {
-  "name": "astrostack",
+  "name": "astro-sb-auth",
   "version": "0.0.0",
   "private": true,
-  "description": "AstroStack — a line of Astro-native components you install into your own src/ and fully own.",
+  "description": "Astro SB Auth — a line of Astro-native components you install into your own src/ and fully own.",
   "type": "module",
   "engines": {
     "node": ">=22.12.0"
   },
   "scripts": {
-    "cli": "pnpm --filter @astrostack/cli exec astrostack",
-    "cli:build": "pnpm --filter @astrostack/cli build",
+    "cli": "pnpm --filter @astro-sb-auth/cli exec astro-sb-auth",
+    "cli:build": "pnpm --filter @astro-sb-auth/cli build",
     "web:dev": "pnpm --filter web dev",
     "web:build": "pnpm --filter web build"
   },

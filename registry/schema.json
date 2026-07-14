@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://astrostack.dev/registry/schema.json",
-  "title": "AstroStack component manifest",
+  "$id": "https://astro-sb-auth.dev/registry/schema.json",
+  "title": "Astro SB Auth component manifest",
   "type": "object",
   "required": ["name", "title", "description", "tier", "version", "files"],
   "additionalProperties": true,
@@ -17,7 +17,7 @@
     "license": { "type": "string" },
     "requires": {
       "type": "array",
-      "description": "Slugs of other AstroStack components that must be installed first",
+      "description": "Slugs of other Astro SB Auth components that must be installed first",
       "items": { "type": "string" }
     },
     "npmDependencies": {

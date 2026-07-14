@@ -28,10 +28,10 @@ export interface AddOptions {
 }
 
 export async function runAdd(names: string[], opts: AddOptions): Promise<number> {
-  p.intro(pc.bgMagenta(pc.black(" AstroStack ")));
+  p.intro(pc.bgMagenta(pc.black(" Astro SB Auth ")));
 
   if (names.length === 0) {
-    p.log.error("Specify at least one component, e.g. " + pc.cyan("astrostack add auth"));
+    p.log.error("Specify at least one component, e.g. " + pc.cyan("astro-sb-auth add auth"));
     p.outro(pc.red("Nothing to install."));
     return 1;
   }
@@ -170,7 +170,7 @@ function renderFileResults(results: WriteResult[]) {
 
   if (results.some((r) => r.outcome === "conflict")) {
     p.log.warn(
-      "Some files already existed and were left untouched. Review the .astrostack-new files and merge manually, or re-run with --force to overwrite."
+      "Some files already existed and were left untouched. Review the .astro-sb-auth-new files and merge manually, or re-run with --force to overwrite."
     );
   }
 }

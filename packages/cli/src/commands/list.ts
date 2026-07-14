@@ -6,7 +6,7 @@ import pc from "picocolors";
 import { loadManifest, resolveRegistry, type Manifest } from "../registry.js";
 
 export async function runList(registry?: string): Promise<number> {
-  p.intro(pc.bgMagenta(pc.black(" AstroStack ")));
+  p.intro(pc.bgMagenta(pc.black(" Astro SB Auth ")));
   const source = resolveRegistry(registry);
   p.log.info(`Registry: ${pc.dim(`${source.kind} · ${source.base}`)}`);
 
@@ -48,6 +48,6 @@ export async function runList(registry?: string): Promise<number> {
     return `${tag} ${pc.bold(m.name.padEnd(12))} ${pc.dim(m.description.split(".")[0] + ".")}`;
   });
   p.note(lines.join("\n"), `${manifests.length} component(s)`);
-  p.outro(`Install with ${pc.cyan("astrostack add <name>")}`);
+  p.outro(`Install with ${pc.cyan("astro-sb-auth add <name>")}`);
   return 0;
 }
